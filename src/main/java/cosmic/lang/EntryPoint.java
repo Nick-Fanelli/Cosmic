@@ -3,7 +3,7 @@ package cosmic.lang;
 import cosmic.lang.entry.ContentAdapter;
 import cosmic.lang.lexer.Lexer;
 
-public class Cosmic {
+public class EntryPoint {
 
     public static void Interpret(ContentAdapter contentAdapter) {
 

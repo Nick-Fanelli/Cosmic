@@ -1,5 +1,6 @@
 package cosmic.lang.lexer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Lexer {
@@ -9,9 +10,6 @@ public class Lexer {
     public Lexer(String fileContents) {
 
         this.fileContents = fileContents;
-
-//        List<Lexeme> lexemes = new Lexical_Analyzer().analyzeCode(code);
-//        tokensTable.setItems(FXCollections.observableList(lexemes));
 
     }
 
@@ -32,6 +30,14 @@ public class Lexer {
                 isMultilineLock = false;
             if(line.strip().endsWith("*/"))
                 isMultilineLock = true;
+        }
+
+        ArrayList<Token> tokens = new LexicalAnalyzer().analyzeCode(code);
+
+        for(Token token : tokens) {
+
+            System.out.println("TOKEN:  " + token.GetTokenType().name() + ":" + token.GetValue());
+
         }
 
     }
