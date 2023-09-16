@@ -1,2 +1,1 @@
-var name = 10
-var another = "Hello World"
+10 + 3

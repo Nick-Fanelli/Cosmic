@@ -1,9 +1,9 @@
 package cosmic.lang.lexer;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.sql.Array;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LexicalAnalyzer {
 
@@ -15,16 +15,20 @@ public class LexicalAnalyzer {
         // Keywords
         tokenTypeMap.put("var", TokenType.KEYWORD);
 
+        tokenTypeMap.put(";", TokenType.SEMI_COLON);
+
         // Operators
         tokenTypeMap.put("=", TokenType.OPERATOR_EQ);
+        tokenTypeMap.put("+", TokenType.OPERATOR_PLUS);
+        tokenTypeMap.put("-", TokenType.OPERATOR_MINUS);
 
     }
 
-    public ArrayList<Token> analyzeCode(HashMap<Integer,String> lines) {
+    public ArrayList<Token> analyzeCode(HashMap<Integer, String> lines) {
 
         ArrayList<Token> tokens = new ArrayList<>();
 
-        lines.forEach((nLine, line ) ->{
+        lines.forEach((nLine, line) -> {
             HashMap<String, TokenType> lexLine = AnalyseLine(line.strip());
             lexLine.forEach((value, token) -> tokens.add(new Token(token, value, nLine)));
         });
@@ -32,17 +36,28 @@ public class LexicalAnalyzer {
         return tokens;
     }
 
-    private HashMap<String, TokenType> AnalyseLine(String line) {
+    private LinkedHashMap<String, TokenType> AnalyseLine(String line) {
 
-        HashMap<String, TokenType> lineTokens = new HashMap<>();
-
+        LinkedHashMap<String, TokenType> lineTokens = new LinkedHashMap<>();
         Automation automation = new Automation();
 
-        for(String str : line.split(" ")) {
-            if(tokenTypeMap.containsKey(str.toLowerCase()))
-                lineTokens.put(str, tokenTypeMap.get(str.toLowerCase()));
-            else
-                lineTokens.put(str, automation.evaluate(str));
+        ArrayList<String> parts = new ArrayList<>();
+        Matcher matcher = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(line);
+
+        while(matcher.find())
+            parts.add(matcher.group(1));
+
+        for(String str : parts) {
+
+            TokenType type;
+
+            if(tokenTypeMap.containsKey(str.toLowerCase())) {
+                type = tokenTypeMap.get(str.toLowerCase());
+            } else {
+                type = automation.evaluate(str);
+            }
+
+            lineTokens.put(str, type);
         }
 
         return lineTokens;
