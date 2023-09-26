@@ -13,7 +13,7 @@ public class Automation {
         finalStates.put(LexicalState.Q7, TokenType.FLOAT);
     }
 
-    private LexicalState executeTransition(LexicalState currentState, char entry) {
+    private LexicalState ExecuteTransition(LexicalState currentState, char entry) {
         switch (currentState) {
             case INITIAL -> {
                 if ((entry >= 'A' && entry <= 'Z') || (entry >= 'a' && entry <= 'z'))
@@ -56,12 +56,12 @@ public class Automation {
         }
     }
 
-    public TokenType evaluate(String str) {
+    public TokenType Evaluate(String str) {
 
         LexicalState state = LexicalState.INITIAL;
 
         for(char c : str.toCharArray()){
-            state = executeTransition(state, c);
+            state = ExecuteTransition(state, c);
         }
 
         return finalStates.getOrDefault(state, TokenType.INVALID);

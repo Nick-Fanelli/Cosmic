@@ -1,63 +1,91 @@
 package cosmic.lang.lexer;
 
-import java.sql.Array;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LexicalAnalyzer {
 
-    private final HashMap<String, TokenType> tokenTypeMap = new HashMap<>();
+    private static final HashMap<String, TokenType> TOKEN_TYPE_MAP = new HashMap<>();
 
-    // Assign all token types
-    public LexicalAnalyzer() {
+    private static Pattern tokenRegex;
 
-        // Keywords
-        tokenTypeMap.put("var", TokenType.KEYWORD);
+    private static void AssignTokenMap() {
 
-        tokenTypeMap.put(";", TokenType.SEMI_COLON);
+        // Identifier
+        TOKEN_TYPE_MAP.put(";", TokenType.SEMI_COLON);
+        TOKEN_TYPE_MAP.put("if", TokenType.IDENTIFIER_IF);
 
         // Operators
-        tokenTypeMap.put("=", TokenType.OPERATOR_EQ);
-        tokenTypeMap.put("+", TokenType.OPERATOR_PLUS);
-        tokenTypeMap.put("-", TokenType.OPERATOR_MINUS);
+        TOKEN_TYPE_MAP.put("=", TokenType.OPERATOR_EQ);
+        TOKEN_TYPE_MAP.put("==", TokenType.OPERATOR_DOUBLE_EQ);
+        TOKEN_TYPE_MAP.put("+", TokenType.OPERATOR_PLUS);
+        TOKEN_TYPE_MAP.put("-", TokenType.OPERATOR_MINUS);
+        TOKEN_TYPE_MAP.put("*", TokenType.OPERATOR_MUL);
+        TOKEN_TYPE_MAP.put("/", TokenType.OPERATOR_DIV);
 
+        TOKEN_TYPE_MAP.put("(", TokenType.OPERATOR_OPEN_PAREN);
+        TOKEN_TYPE_MAP.put(")", TokenType.OPERATOR_CLOSE_PAREN);
+        TOKEN_TYPE_MAP.put("{", TokenType.OPERATOR_OPEN_CURLY_BRACES);
+        TOKEN_TYPE_MAP.put("}", TokenType.OPERATOR_CLOSE_CURLY_BRACES);
     }
 
-    public ArrayList<Token> analyzeCode(HashMap<Integer, String> lines) {
+    private static void BuildRegex() {
+        LexicalAnalyzer.AssignTokenMap();
+
+        StringBuilder regex = new StringBuilder("[0-9]+|");
+        String needsEscape = "(\\+)|(\\.)|(\\()|(\\))|(\\{)|(\\*)";
+
+        for(String identifier : TOKEN_TYPE_MAP.keySet()) {
+            if(identifier.matches(needsEscape))
+                identifier = "\\" + identifier;
+
+            regex.append("(").append(identifier).append(")|");
+        }
+
+        regex.setLength(regex.length() - 1);
+        regex.append("|[a-zA-Z_][a-zA-Z0-9_]*"); // Identifier Declaration
+
+        LexicalAnalyzer.tokenRegex = Pattern.compile(regex.toString());
+    }
+
+    public ArrayList<Token> AnalyseCode(HashMap<Integer, String> lines) {
+
+        if(tokenRegex == null)
+            BuildRegex();
 
         ArrayList<Token> tokens = new ArrayList<>();
 
         lines.forEach((nLine, line) -> {
-            HashMap<String, TokenType> lexLine = AnalyseLine(line.strip());
-            lexLine.forEach((value, token) -> tokens.add(new Token(token, value, nLine)));
+            ArrayList<Token> lineTokens = AnalyseLine(line.strip(), nLine);
+            tokens.addAll(lineTokens);
         });
 
         return tokens;
     }
 
-    private LinkedHashMap<String, TokenType> AnalyseLine(String line) {
+    private ArrayList<Token> AnalyseLine(String line, int lineNumber) {
 
-        LinkedHashMap<String, TokenType> lineTokens = new LinkedHashMap<>();
+        ArrayList<Token> lineTokens = new ArrayList<>();
         Automation automation = new Automation();
 
         ArrayList<String> parts = new ArrayList<>();
-        Matcher matcher = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(line);
+        Matcher matcher = LexicalAnalyzer.tokenRegex.matcher(line);
 
         while(matcher.find())
-            parts.add(matcher.group(1));
+            parts.add(matcher.group());
 
         for(String str : parts) {
 
             TokenType type;
 
-            if(tokenTypeMap.containsKey(str.toLowerCase())) {
-                type = tokenTypeMap.get(str.toLowerCase());
+            if(TOKEN_TYPE_MAP.containsKey(str.toLowerCase())) {
+                type = TOKEN_TYPE_MAP.get(str.toLowerCase());
             } else {
-                type = automation.evaluate(str);
+                type = automation.Evaluate(str);
             }
 
-            lineTokens.put(str, type);
+            lineTokens.add(new Token(type, str, lineNumber));
         }
 
         return lineTokens;

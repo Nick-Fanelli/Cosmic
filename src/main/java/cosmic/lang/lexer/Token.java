@@ -22,4 +22,8 @@ public class Token {
     public void SetValue(String value) { this.value = value; }
     public void SetLineNumber(int line) { this.line = line; }
 
+    @Override
+    public String toString() {
+        return "TOKEN -> TYPE=" + this.type + ", VALUE=" + this.value;
+    }
 }

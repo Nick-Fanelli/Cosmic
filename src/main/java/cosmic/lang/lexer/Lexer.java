@@ -13,8 +13,6 @@ public class Lexer {
 
     }
 
-
-
     public void ExtractTokens() {
 
         String[] lines = fileContents.split("\n");
@@ -32,12 +30,10 @@ public class Lexer {
                 isMultilineLock = true;
         }
 
-        ArrayList<Token> tokens = new LexicalAnalyzer().analyzeCode(code);
+        ArrayList<Token> tokens = new LexicalAnalyzer().AnalyseCode(code);
 
         for(Token token : tokens) {
-
-            System.out.println("TOKEN:  " + token.GetTokenType().name() + ":" + token.GetValue());
-
+            System.out.println(token);
         }
 
     }
