@@ -13,7 +13,7 @@ public class Lexer {
 
     }
 
-    public void ExtractTokens() {
+    public Token[] ExtractTokens() {
 
         String[] lines = fileContents.split("\n");
         HashMap<Integer, String> code = new HashMap<>();
@@ -31,11 +31,7 @@ public class Lexer {
         }
 
         ArrayList<Token> tokens = new LexicalAnalyzer().AnalyseCode(code);
-
-        for(Token token : tokens) {
-            System.out.println(token);
-        }
-
+        return tokens.toArray(new Token[0]);
     }
 
 }

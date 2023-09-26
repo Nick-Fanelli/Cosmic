@@ -12,9 +12,8 @@ public class LexicalAnalyzer {
 
     private static void AssignTokenMap() {
 
-        // Identifier
-        TOKEN_TYPE_MAP.put(";", TokenType.SEMI_COLON);
-        TOKEN_TYPE_MAP.put("if", TokenType.IDENTIFIER_IF);
+        // Keyword
+        TOKEN_TYPE_MAP.put("if", TokenType.KEYWORD_IF);
 
         // Operators
         TOKEN_TYPE_MAP.put("=", TokenType.OPERATOR_EQ);
@@ -28,12 +27,21 @@ public class LexicalAnalyzer {
         TOKEN_TYPE_MAP.put(")", TokenType.OPERATOR_CLOSE_PAREN);
         TOKEN_TYPE_MAP.put("{", TokenType.OPERATOR_OPEN_CURLY_BRACES);
         TOKEN_TYPE_MAP.put("}", TokenType.OPERATOR_CLOSE_CURLY_BRACES);
+
+        // Type Primitive
+        TOKEN_TYPE_MAP.put("string", TokenType.KEYWORD_TYPE_PRIMITIVE);
+        TOKEN_TYPE_MAP.put("int", TokenType.KEYWORD_TYPE_PRIMITIVE);
+
+        // Other
+        TOKEN_TYPE_MAP.put(";", TokenType.SEMI_COLON);
+
+
     }
 
     private static void BuildRegex() {
         LexicalAnalyzer.AssignTokenMap();
 
-        StringBuilder regex = new StringBuilder("[0-9]+|");
+        StringBuilder regex = new StringBuilder("[0-9]+|(\".*\")|");
         String needsEscape = "(\\+)|(\\.)|(\\()|(\\))|(\\{)|(\\*)";
 
         for(String identifier : TOKEN_TYPE_MAP.keySet()) {
