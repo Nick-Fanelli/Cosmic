@@ -15,10 +15,15 @@ public class EntryPoint {
         Lexer lexer = new Lexer(fileContents);
         Token[] tokens = lexer.ExtractTokens();
 
-        Parser parser = new Parser(tokens);
-        Node ast = parser.GenerateAbstractSyntaxTree();
+        if(tokens.length == 0) {
+            System.err.println("No tokens to parse");
+            return;
+        }
 
-        System.out.println(ast);
+        Parser parser = new Parser(tokens);
+        parser.GenerateAbstractSyntaxTree();
+
+//        System.out.println(ast);
 
     }
 

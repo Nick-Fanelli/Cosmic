@@ -2,9 +2,15 @@ package cosmic.lang.parser;
 
 import cosmic.lang.lexer.Token;
 import cosmic.lang.lexer.TokenType;
+import cosmic.lang.parser.derivers.ContextDeriver;
+import cosmic.lang.parser.derivers.NumericalExpressionContextDeriver;
 import cosmic.lang.parser.nodes.BinaryOperationNode;
 import cosmic.lang.parser.nodes.Node;
 import cosmic.lang.parser.nodes.NumberNode;
+
+import javax.naming.Context;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Parser {
 
@@ -13,6 +19,10 @@ public class Parser {
 
     private Token currentToken;
 
+    private final ContextDeriver[] contextDerivers = new ContextDeriver[] {
+            new NumericalExpressionContextDeriver()
+    };
+
     public Parser(Token[] tokens) {
 
         this.tokens = tokens;
@@ -20,56 +30,48 @@ public class Parser {
 
     }
 
-    private void Advance() {
-        this.tokenIndex++;
+    public void Advance(int n) {
+        this.tokenIndex += n;
 
-        if(this.tokenIndex < tokens.length)
-            this.currentToken = this.tokens[this.tokenIndex];
+        if(this.tokenIndex >= this.tokens.length)
+            this.tokenIndex = this.tokens.length - 1;
+
+        this.currentToken = this.tokens[this.tokenIndex];
     }
 
-    private NumberNode Factor() {
+    public void Retreat() {
+        this.tokenIndex--;
 
-        if(this.currentToken.type.IsOfType(TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING)) {
-            NumberNode node = new NumberNode(this.currentToken);
-            this.Advance();
-            return node;
+        if(this.tokenIndex < 0)
+            this.tokenIndex = 0;
+
+        this.currentToken = this.tokens[this.tokenIndex];
+    }
+
+    public void GenerateAbstractSyntaxTree() {
+
+        ArrayList<Node> nodes = new ArrayList<>();
+
+        for(ContextDeriver contextDeriver : contextDerivers) {
+
+            Token[] subArray = Arrays.copyOfRange(this.tokens, this.tokenIndex, this.tokens.length - 1);
+
+            Node node = contextDeriver.DeriveContext(subArray);
+
+            if(node != null) {
+                nodes.add(node);
+            }
+
+            this.Advance(contextDeriver.GetAdvanceNumber());
+
         }
 
-        return null;
-    }
-
-    private Node Term() {
-        Node left = this.Factor();
-
-        while(this.currentToken.type.IsOfType(TokenType.OPERATOR_MUL, TokenType.OPERATOR_DIV)) {
-            Token operatorToken = this.currentToken;
-            this.Advance();
-            NumberNode right = this.Factor();
-
-            left = new BinaryOperationNode(left, operatorToken, right);
+        for(Node node : nodes) {
+            System.out.println(node);
         }
 
-        return left;
     }
 
-    private Node Expression() {
-        Node left = this.Term();
-
-        while(this.currentToken.type.IsOfType(TokenType.OPERATOR_PLUS, TokenType.OPERATOR_MINUS)) {
-            Token operatorToken = this.currentToken;
-            this.Advance();
-            Node right = this.Term();
-
-            left = new BinaryOperationNode(left, operatorToken, right);
-        }
-
-        return left;
-    }
-
-    public Node GenerateAbstractSyntaxTree() {
-
-        return this.Expression();
-
-    }
+    public Token GetCurrentToken() { return this.currentToken; }
 
 }
